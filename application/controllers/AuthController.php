@@ -117,7 +117,7 @@ class AuthController extends CI_Controller {
     
         $config = array(
             'protocol'      => 'smtp',
-            'smtp_host'     => 'qtrack@bitap.my.id', 
+            'smtp_host'     => 'mail.bitap.my.id', 
             'smtp_port'     => 465, 
             'smtp_user'     => 'qtrack@bitap.my.id', 
             'smtp_pass'     => 'Semangat123*', 
