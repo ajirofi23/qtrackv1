@@ -6,7 +6,7 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'bitapmyi_debeqtrack',
+	'hostname' => 'localhost',
 	'username' => 'bitapmyi_debeqtrack',
 	'password' => 'Semangat23*',
 	'database' => 'bitapmyi_debeqtrack',
