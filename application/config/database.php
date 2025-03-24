@@ -6,10 +6,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
-	'database' => 'debeqtrack',
+	'hostname' => 'bitapmyi_debeqtrack',
+	'username' => 'bitapmyi_debeqtrack',
+	'password' => 'Semangat23*',
+	'database' => 'bitapmyi_debeqtrack',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
