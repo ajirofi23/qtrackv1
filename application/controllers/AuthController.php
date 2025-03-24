@@ -117,10 +117,10 @@ class AuthController extends CI_Controller {
     
         $config = array(
             'protocol'      => 'smtp',
-            'smtp_host'     => 'mail.jas-pro.my.id', 
+            'smtp_host'     => 'qtrack@bitap.my.id', 
             'smtp_port'     => 465, 
-            'smtp_user'     => 'qtrack@jas-pro.my.id', 
-            'smtp_pass'     => 'Pemalang19', 
+            'smtp_user'     => 'qtrack@bitap.my.id', 
+            'smtp_pass'     => 'Semanat123*', 
             'smtp_crypto'   => 'ssl', 
             'mailtype'      => 'html', 
             'charset'       => 'utf-8', 
@@ -128,7 +128,7 @@ class AuthController extends CI_Controller {
         );
     
         $this->email->initialize($config);
-        $this->email->from('qtrack@jas-pro.my.id', 'QTRACK'); 
+        $this->email->from('qtrack@bitap.my.id', 'QTRACK'); 
         $this->email->to($email);
         $this->email->subject('Konfirmasi Registrasi');
         
