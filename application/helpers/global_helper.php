@@ -124,7 +124,7 @@ if (!function_exists('get_web_info')) {
             if ($query->num_rows() > 0) {
                 $web_info = $query->row();
                 // Simpan ke cache untuk 1 jam
-                $CI->cache->save($cache_key, $web_info, 3600);
+                $CI->cache->save($cache_key, $web_info, 5);
             } else {
                 return null;
             }
