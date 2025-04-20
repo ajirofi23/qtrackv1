@@ -128,7 +128,7 @@ class AuthController extends CI_Controller {
         );
     
         $this->email->initialize($config);
-        $this->email->from('qtrack@bitap.my.id', get_web_info('nama_web')); 
+        $this->email->from('qtrack@bitap.my.id', get_web_info('qtrack')); 
         $this->email->to($email);
         $this->email->subject('Konfirmasi Registrasi');
         
