@@ -120,9 +120,7 @@
                 icon: icon, // 'success', 'error', 'warning', 'info', 'question'
                 title: icon,
                 text: title,
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#3085d6', // Warna tombol
+                showConfirmButton: false, // Menyembunyikan tombol konfirmasi
                 backdrop: 'rgba(0,0,0,0.5)', // Latar belakang semi-transparan
                 timer: 3000, // Timer lebih lama (3 detik)
                 timerProgressBar: true, // Menampilkan progress bar
@@ -134,8 +132,8 @@
                     content: 'swal2-content-custom', // Custom class untuk konten
                 }
             }).then((result) => {
-                if (result.isConfirmed && redirectUrl) {
-                    // Redirect ke halaman tertentu jika redirectUrl diberikan
+                // Redirect ke halaman tertentu jika redirectUrl diberikan
+                if (redirectUrl) {
                     window.location.href = redirectUrl;
                 }
             });
