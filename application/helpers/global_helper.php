@@ -105,30 +105,27 @@ if (!function_exists('get_web_info')) {
     function get_web_info($field = 'nama_web') {
         $CI =& get_instance();
         
-        // Load cache driver jika belum
-        if (!isset($CI->cache)) {
-            $CI->load->driver('cache', array('adapter' => 'file', 'backup' => 'apc'));
-        }
-        
-        // Coba ambil dari cache dulu
-        $cache_key = 'web_info_data';
-        $web_info = $CI->cache->get($cache_key);
-        
-        if ($web_info === FALSE) {
-            // Jika tidak ada di cache, ambil dari database
-            $CI->db->select('*');
-            $CI->db->from('tbl_web_set'); // Sesuaikan dengan nama tabel Anda
-            $CI->db->limit(1);
+        $CI->db->select('*');
+$CI->db->from('tbl_web_set');
+
+$CI->db->limit(1);
             $query = $CI->db->get();
-            
-            if ($query->num_rows() > 0) {
+if ($query->num_rows() > 0) {
                 $web_info = $query->row();
-                // Simpan ke cache untuk 1 jam
-                $CI->cache->save($cache_key, $web_info, 5);
-            } else {
+} else {
                 return null;
             }
+              
+        
+        // Return field tertentu atau semua data jika tidak ditentukan
+        if ($field === 'all') {
+            return $web_info;
         }
+        
+        return isset($web_info->$field) ? $web_info->$field : null;
+        
+}
+
         
         // Return field tertentu atau semua data jika tidak ditentukan
         if ($field === 'all') {
