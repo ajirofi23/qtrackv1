@@ -13,20 +13,20 @@ class LoketController extends CI_Controller {
       $data['title']      = 'Loket Management';
       $data['conten']     = 'admin/page/loket_management/view';
       $joins = array(
-        array(
-            'table' => 'tbl_layanan', // Tabel yang di-join
-            'condition' => 'tbl_loket.id_layanan = tbl_layanan.id_layanan', // Kondisi join
-            'type' => 'inner' // Tipe join
-        )
-    );
-    $select = 'tbl_loket.*, tbl_layanan.nama AS nama_layanan';
-    // Mengambil data dengan relasi
-    $data['data_loket'] = $this->M_Model->get_relation(
-        'tbl_loket', // Tabel utama
-        $joins,
-        $select
-    );
-      $this->load->view('admin/template/template',$data);
+            array(
+                'table' => 'tbl_layanan', // Tabel yang di-join
+                'condition' => 'tbl_loket.id_layanan = tbl_layanan.id_layanan', // Kondisi join
+                'type' => 'inner' // Tipe join
+            )
+        );
+        $select = 'tbl_loket.*, tbl_layanan.nama AS nama_layanan';
+        // Mengambil data dengan relasi
+        $data['data_loket'] = $this->M_Model->get_relation(
+            'tbl_loket', // Tabel utama
+            $joins,
+            $select
+        );
+        $this->load->view('admin/template/template',$data);
     }
 
     public function tambah(){

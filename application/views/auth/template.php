@@ -120,12 +120,6 @@
                 icon: icon, // 'success', 'error', 'warning', 'info', 'question'
                 title: icon,
                 text: title,
-                showConfirmButton: false, // Menyembunyikan tombol konfirmasi
-                backdrop: 'rgba(0,0,0,0.5)', // Latar belakang semi-transparan
-                timer: 3000, // Timer lebih lama (3 detik)
-                timerProgressBar: true, // Menampilkan progress bar
-                allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
-                allowEscapeKey: false, // Tidak bisa menutup dengan tombol ESC
                 showConfirmButton: false, // Disable the OK button
                 backdrop: 'rgba(0,0,0,0.5)', // Semi-transparent background
                 timer: 3000, // Timer (3 seconds)
@@ -137,9 +131,6 @@
                     title: 'swal2-title-custom', // Custom class for title
                     content: 'swal2-content-custom', // Custom class for content
                 }
-            }).then((result) => {
-                // Redirect ke halaman tertentu jika redirectUrl diberikan
-                if (redirectUrl) {
             }).then(() => {
                 if (redirectUrl) {
                     // Redirect to specified page if redirectUrl is provided
