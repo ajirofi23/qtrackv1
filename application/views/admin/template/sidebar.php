@@ -3,7 +3,7 @@
 
 <!-- Sidebar - Brand -->
 <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-    <div class="sidebar-brand-text mx-3">QTRACK</div>
+    <div class="sidebar-brand-text mx-3"><?php echo get_web_info('nama_web'); ?></div>
 </a>
 
 <!-- Divider -->
@@ -50,6 +50,13 @@
       <span>Layanan</span>
     </a>
 </li>
+<!-- Nav Item - Home -->
+<li class="nav-item">
+    <a class="nav-link" href="<?= base_url('BookingController');?>">
+        <span><i class="fas fa-clock"></i></span>
+      <span>Booking</span>
+    </a>
+</li>
 
 
 <!-- Nav Item - Home -->
@@ -57,6 +64,13 @@
     <a class="nav-link" href="<?= base_url('UserManagementController');?>">
         <span><i class="fas fa-users"></i></span>
       <span>Users</span>
+    </a>
+</li>
+<!-- Nav Item - Home -->
+<li class="nav-item">
+    <a class="nav-link" href="<?= base_url('WebController');?>">
+        <span><i class="fas fa-wrench"></i></span>
+      <span>Web Setting</span>
     </a>
 </li>
 <!-- Divider -->

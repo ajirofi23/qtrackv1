@@ -8,42 +8,52 @@
               <table id="historiAntrianTable" class="table table-striped table-bordered" style="width:100%">
                   <thead>
                       <tr>
+                          <th>NO</th>
                           <th>No. Antrian</th>
                           <th>Layanan</th>
-                          <th>Tanggal Booking</th>
+                          <th>Tanggal</th>
+                          <th>Waktu Booking</th>
                           <th>Status</th>
-                          <th>Aksi</th>
                       </tr>
                   </thead>
                   <tbody>
-                      <!-- Data akan diisi oleh DataTables -->
-                      <tr>
-                          <td>001</td>
-                          <td>Layanan A</td>
-                          <td>2023-10-10 10:00:00</td>
-                          <td><span class="badge badge-success">Selesai</span></td>
-                          <td>
-                              <button class="btn btn-sm btn-info">Detail</button>
-                          </td>
-                      </tr>
-                      <tr>
-                          <td>002</td>
-                          <td>Layanan B</td>
-                          <td>2023-10-10 10:05:00</td>
-                          <td><span class="badge badge-warning">Menunggu</span></td>
-                          <td>
-                              <button class="btn btn-sm btn-info">Detail</button>
-                          </td>
-                      </tr>
-                      <tr>
-                          <td>003</td>
-                          <td>Layanan C</td>
-                          <td>2023-10-10 10:10:00</td>
-                          <td><span class="badge badge-danger">Dibatalkan</span></td>
-                          <td>
-                              <button class="btn btn-sm btn-info">Detail</button>
-                          </td>
-                      </tr>
+                        <?php 
+                        $no = 1;
+                        foreach ($data_histori as $h) : ?>
+                            <tr>
+                                <td><?= $no++;?></td>
+                                <td><?= $h['no_antrian'];?></td>
+                                <td><?= $h['nama_layanan'];?></td>
+                                <td><?= date('d-m-Y',strtotime($h['waktu_buat']));?></td>
+                                <td><?= $h['waktu_booking'];?></td>
+                                <td>
+                                    <?php
+                                    // Determine status and badge color based on $h['status_antrian']
+                                    if ($h['status_antrian'] == 'buat') {
+                                        $sa = 'Menunggu Dipanggil';
+                                        $badge_color = 'badge-secondary';
+                                    } elseif ($h['status_antrian'] == 'panggil') {
+                                        $sa = 'Sedang Dipanggil';
+                                        $badge_color = 'badge-primary';
+                                    } elseif ($h['status_antrian'] == 'proses') {
+                                        $sa = 'Sedang Dilayani';
+                                        $badge_color = 'badge-info';
+                                    } elseif ($h['status_antrian'] == 'selesai') {
+                                        $sa = 'Selesai';
+                                        $badge_color = 'badge-success';
+                                    } elseif ($h['status_antrian'] == 'batal') {
+                                        $sa = 'Dibatalkan';
+                                        $badge_color = 'badge-danger';
+                                    } else {
+                                        $sa = 'Status Tidak Dikenali';
+                                        $badge_color = 'badge-dark';
+                                    }
+                                    ?>
+                                    <span class="badge <?php echo $badge_color; ?>"><?php echo $sa; ?></span>
+                                </td>
+                               
+                            </tr>
+                        <?php endforeach;?>
                   </tbody>
               </table>
           </div>

@@ -120,22 +120,20 @@
                 icon: icon, // 'success', 'error', 'warning', 'info', 'question'
                 title: icon,
                 text: title,
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#3085d6', // Warna tombol
-                backdrop: 'rgba(0,0,0,0.5)', // Latar belakang semi-transparan
-                timer: 3000, // Timer lebih lama (3 detik)
-                timerProgressBar: true, // Menampilkan progress bar
-                allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
-                allowEscapeKey: false, // Tidak bisa menutup dengan tombol ESC
+                showConfirmButton: false, // Disable the OK button
+                backdrop: 'rgba(0,0,0,0.5)', // Semi-transparent background
+                timer: 3000, // Timer (3 seconds)
+                timerProgressBar: true, // Show progress bar
+                allowOutsideClick: false, // Can't close by clicking outside
+                allowEscapeKey: false, // Can't close with ESC key
                 customClass: {
-                    popup: 'animated bounceIn', // Animasi masuk (bounceIn)
-                    title: 'swal2-title-custom', // Custom class untuk judul
-                    content: 'swal2-content-custom', // Custom class untuk konten
+                    popup: 'animated bounceIn', // Entrance animation (bounceIn)
+                    title: 'swal2-title-custom', // Custom class for title
+                    content: 'swal2-content-custom', // Custom class for content
                 }
-            }).then((result) => {
-                if (result.isConfirmed && redirectUrl) {
-                    // Redirect ke halaman tertentu jika redirectUrl diberikan
+            }).then(() => {
+                if (redirectUrl) {
+                    // Redirect to specified page if redirectUrl is provided
                     window.location.href = redirectUrl;
                 }
             });

@@ -1,7 +1,9 @@
 <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                        <span>
+                        <?php echo get_web_info('footer'); ?> | Designed by <a href="#" style="color:rgb(255, 191, 0);"><?php echo get_web_info('create_by'); ?></a>
+                        </span>
                     </div>
                 </div>
             </footer>
@@ -24,12 +26,12 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Yakin anda keluar sistem ?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-body">Silahkan tekan tombol logout, untuk keluar sistem.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
                     <a class="btn btn-primary" href="<?= base_url('AuthController/logout');?>">Logout</a>
@@ -39,27 +41,25 @@
     </div>
 
    <script>
-    function showSweetAlert(icon, title, redirectUrl = null) {
+        function showSweetAlert(icon, title, redirectUrl = null) {
             Swal.fire({
                 icon: icon, // 'success', 'error', 'warning', 'info', 'question'
                 title: icon,
                 text: title,
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#3085d6', // Warna tombol
-                backdrop: 'rgba(0,0,0,0.5)', // Latar belakang semi-transparan
-                timer: 3000, // Timer lebih lama (3 detik)
-                timerProgressBar: true, // Menampilkan progress bar
-                allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
-                allowEscapeKey: false, // Tidak bisa menutup dengan tombol ESC
+                showConfirmButton: false, // Disable the OK button
+                backdrop: 'rgba(0,0,0,0.5)', // Semi-transparent background
+                timer: 3000, // Timer (3 seconds)
+                timerProgressBar: true, // Show progress bar
+                allowOutsideClick: false, // Can't close by clicking outside
+                allowEscapeKey: false, // Can't close with ESC key
                 customClass: {
-                    popup: 'animated bounceIn', // Animasi masuk (bounceIn)
-                    title: 'swal2-title-custom', // Custom class untuk judul
-                    content: 'swal2-content-custom', // Custom class untuk konten
+                    popup: 'animated bounceIn', // Entrance animation (bounceIn)
+                    title: 'swal2-title-custom', // Custom class for title
+                    content: 'swal2-content-custom', // Custom class for content
                 }
-            }).then((result) => {
-                if (result.isConfirmed && redirectUrl) {
-                    // Redirect ke halaman tertentu jika redirectUrl diberikan
+            }).then(() => {
+                if (redirectUrl) {
+                    // Redirect to specified page if redirectUrl is provided
                     window.location.href = redirectUrl;
                 }
             });
@@ -71,7 +71,17 @@
                 icon: '<?= $this->session->flashdata('swal')['icon'] ?>',
                 title: '<?= $this->session->flashdata('swal')['title'] ?>',
                 text: '<?= $this->session->flashdata('swal')['text'] ?>',
-                confirmButtonText: 'OK'
+                showConfirmButton: false, // Disable the OK button
+                backdrop: 'rgba(0,0,0,0.5)', // Semi-transparent background
+                timer: 2000, // Timer (3 seconds)
+                timerProgressBar: true, // Show progress bar
+                allowOutsideClick: false, // Can't close by clicking outside
+                allowEscapeKey: false, // Can't close with ESC key
+                customClass: {
+                    popup: 'animated bounceIn', // Entrance animation (bounceIn)
+                    title: 'swal2-title-custom', // Custom class for title
+                    content: 'swal2-content-custom', // Custom class for content
+                }
             });
         </script>
     <?php endif; ?>

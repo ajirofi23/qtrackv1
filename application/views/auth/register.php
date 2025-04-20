@@ -1,6 +1,6 @@
 <div class="text-center p-0 m-0">
-    <h1 class="h4 text-900 mb-0">QTRACK</h1>
-    <p class="text-info">Bank Muamalat KC Karawang</p>
+    <h1 class="h4 text-900 mb-0"><?php echo get_web_info('nama_web'); ?></h1>
+    <p class="text-info"><?php echo get_web_info('alamat'); ?></p>
 </div>
 <form class="user" id="form-register">
     <div class="form-group floating-label">
