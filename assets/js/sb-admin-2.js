@@ -53,4 +53,29 @@
     e.preventDefault();
   });
 
-})(jQuery); // End of use strict
+})(jQuery); 
+
+// End of use strict
+
+// Moving on to the next friends...)
+
+// Titin: Hey bro, what are you guys up to?
+
+
+// Reza: Working on a project!
+
+// Rofi: Yeah, the deadline’s coming up. Help us out!
+
+// Titin: Nah, I’m good! Haha. What are you working on?
+
+// Reza: I’m doing a mobile project.
+
+// Rofi: And I’m handling the web part.
+
+// Titin: Cool! Any words of motivation?
+
+// Reza: Keep pushing forward!
+
+// Rofi: We’re pioneers, not inheritors!
+
+// Reza & Rofi: Well!

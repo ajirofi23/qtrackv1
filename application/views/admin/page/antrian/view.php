@@ -91,7 +91,7 @@ $(document).ready(function() {
 
     // Fungsi untuk membaca teks dengan suara
     function speak(text) {
-        if ('speechSynthesis' in window) {
+        if ('speechSynthesis' in window) { //object dari js tanpa librsry
             // Hentikan suara yang sedang berjalan (jika ada)
             if (currentUtterance) {
                 window.speechSynthesis.cancel();
@@ -134,7 +134,7 @@ $(document).ready(function() {
                     var textToSpeak = `Nomor antrian ${nomorAntrian}, silakan menuju loket ${id_loket}, untuk layanan ${jenisLayanan}.`;
 
                     // Baca teks menggunakan Web Speech API
-                    speak(textToSpeak);
+                    speak(textToSpeak); //property didlm method
 
                     Swal.fire({
                         icon: 'success',
