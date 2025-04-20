@@ -123,7 +123,7 @@ if ($query->num_rows() > 0) {
         }
         
         return isset($web_info->$field) ? $web_info->$field : null;
-        
+
 }
 
         
@@ -134,4 +134,4 @@ if ($query->num_rows() > 0) {
         
         return isset($web_info->$field) ? $web_info->$field : null;
     }
-}
+
