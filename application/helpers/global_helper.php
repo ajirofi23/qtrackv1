@@ -126,12 +126,5 @@ if ($query->num_rows() > 0) {
 
 }
 
-        
-        // Return field tertentu atau semua data jika tidak ditentukan
-        if ($field === 'all') {
-            return $web_info;
-        }
-        
-        return isset($web_info->$field) ? $web_info->$field : null;
-    }
+}
 
