@@ -126,14 +126,23 @@
                 timerProgressBar: true, // Menampilkan progress bar
                 allowOutsideClick: false, // Tidak bisa menutup dengan klik di luar
                 allowEscapeKey: false, // Tidak bisa menutup dengan tombol ESC
+                showConfirmButton: false, // Disable the OK button
+                backdrop: 'rgba(0,0,0,0.5)', // Semi-transparent background
+                timer: 3000, // Timer (3 seconds)
+                timerProgressBar: true, // Show progress bar
+                allowOutsideClick: false, // Can't close by clicking outside
+                allowEscapeKey: false, // Can't close with ESC key
                 customClass: {
-                    popup: 'animated bounceIn', // Animasi masuk (bounceIn)
-                    title: 'swal2-title-custom', // Custom class untuk judul
-                    content: 'swal2-content-custom', // Custom class untuk konten
+                    popup: 'animated bounceIn', // Entrance animation (bounceIn)
+                    title: 'swal2-title-custom', // Custom class for title
+                    content: 'swal2-content-custom', // Custom class for content
                 }
             }).then((result) => {
                 // Redirect ke halaman tertentu jika redirectUrl diberikan
                 if (redirectUrl) {
+            }).then(() => {
+                if (redirectUrl) {
+                    // Redirect to specified page if redirectUrl is provided
                     window.location.href = redirectUrl;
                 }
             });

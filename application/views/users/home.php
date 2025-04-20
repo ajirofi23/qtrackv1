@@ -3,7 +3,7 @@
   <div class="row justify-content-center mt-5">
       <?php foreach ($data_loket as $row) : ?>
       <div class="col-md-4 mb-4">
-          <div class="card custom-card" id="loket-antrian-<?= $row['id_layanan']; ?>" data-id-loket="<?= $row['id_loket'];?>" data-id-layanan="<?= $row['id_layanan']; ?>">
+          <div class="card custom-card" id="loket-antrian-<?= $row['id_layanan']; ?>" data-id-loket="<?= $row['id_loket'];?>" data-jenis-loket="<?= $row['jenis'];?>" data-id-layanan="<?= $row['id_layanan']; ?>">
               <div class="card-header custom-card-header bg-info text-center">
                   <h4 class="text-uppercase text-center" id="jenis_layanan_<?=$row['id_loket'];?>"><?= $row['nama']; ?></h4>
                   <span class="badge badge-<?= ($row['jenis'] == '1') ? 'success' : 'danger';?> text-center"><?= ($row['jenis'] == '1') ? 'BOOKING' : 'NON BOOKING';?></span>
@@ -26,13 +26,14 @@
       setInterval(function() {
           $('.custom-card').each(function() {
               var id_loket = $(this).data('id-loket'); // Ambil id_loket dari data attribute
+              var jenis_loket     = $(this).data('jenis-loket'); // Ambil id_loket dari data attribute
               var id_layanan = $(this).data('id-layanan'); // Ambil id_layanan dari data attribute
               var $display = $(this).find('.display-4'); // Temukan elemen untuk menampilkan nomor antrian
               var $status_antrian = $(this).find('#status_antrian'); // Temukan elemen untuk menampilkan status antrian
               $.ajax({
                   url: '<?= base_url("AntrianController/get_antrian");?>', // Ganti dengan path ke file PHP Anda
                   method: 'POST',
-                  data: { id_layanan: id_layanan, id_loket: id_loket }, // Kirim id_layanan dan id_loket sebagai parameter
+                  data: { id_layanan: id_layanan, id_loket: id_loket,jenis_loket:jenis_loket }, // Kirim id_layanan dan id_loket sebagai parameter
                   dataType: 'json',
                   success: function(data) {
                       // Memeriksa apakah data yang diterima tidak kosong
@@ -78,7 +79,7 @@
                           }
 
                           // Memperbarui tampilan
-                          $display.text(kode_layanan + nomor_antrian); // Memperbarui nomor antrian di dalam elemen
+                          $display.text(nomor_antrian); // Memperbarui nomor antrian di dalam elemen
                           $status_antrian.text(sa); // Memperbarui status antrian di dalam elemen
                           $status_antrian.removeClass().addClass('badge ' + badge_color); // Mengatur kelas badge
                           // Memperbarui data-id-antrian pada semua tombol

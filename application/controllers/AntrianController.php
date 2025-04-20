@@ -23,6 +23,8 @@ class AntrianController extends CI_Controller {
   
       // Tambahkan kondisi WHERE berdasarkan status loket
       $this->db->where('tbl_loket.status', '1'); // Hanya ambil data dengan status '1' (aktif)
+      $this->db->order_by('tbl_loket.jenis', 'ASC');
+    //   $this->db->order_by('waktu_awal', 'ASC');
   
       // Tambahkan kondisi WHERE khusus untuk operator
       if ($this->session->userdata('roles') == "operator") {
@@ -41,135 +43,213 @@ class AntrianController extends CI_Controller {
 
 
   public function get_antrian() {
-    // Mengambil id_loket dan id_layanan dari input POST
-    $id_loket   = $this->input->post('id_loket');
-    $id_layanan = $this->input->post('id_layanan');
+        // Mengambil id_loket dan id_layanan dari input POST
+        $id_loket       = $this->input->post('id_loket');
+        $jenis_loket    = $this->input->post('jenis_loket');
+        $id_layanan     = $this->input->post('id_layanan');
 
-    // Cek apakah loket ada dan id_antrian terisi
-    $this->db->select('id_antrian');
-    $this->db->from('tbl_loket');
-    $this->db->where('id_loket', $id_loket);
-    $cek_loket  = $this->db->get();
-    $loket_data = $cek_loket->row_array();
-    (int) $id_antrian = $loket_data['id_antrian'];
+        // Cek apakah loket ada dan id_antrian terisi
+        $this->db->select('id_antrian');
+        $this->db->from('tbl_loket');
+        $this->db->where('id_loket', $id_loket);
+        $cek_loket          = $this->db->get();
 
-    $today = date('Y-m-d'); // Format: Tahun-Bulan-Tanggal
-    if($id_antrian > 0){
-        $this->db->select('tbl_antrian.*, tbl_layanan.kode as kode_layanan, tbl_antrian.status as status_antrian');
+        $loket_data         = $cek_loket->row_array();
+        (int) $id_antrian   = $loket_data['id_antrian'];
+        $today              = date('Y-m-d'); // Format: Tahun-Bulan-Tanggal
+
+        $data_jam = $this->get_active_booking_id();
+        // var_dump($data_jam);
+        // die;
+
+
+
+        if($id_antrian > 0){
+
+            if($jenis_loket == '1'){
+                $this->db->select('tbl_antrian.*, tbl_layanan.kode as kode_layanan, tbl_antrian.status as status_antrian');
+                $this->db->from('tbl_antrian');
+                $this->db->join('tbl_layanan', 'tbl_layanan.id_layanan = tbl_antrian.id_layanan', 'left');
+                $this->db->where('tbl_antrian.id', $id_antrian);
+                $this->db->where('tbl_antrian.jenis_antrian', 'booking');
+                $this->db->where('tbl_antrian.id_waktu_booking', $data_jam);
+                $this->db->where_in('tbl_antrian.status', ['panggil', 'proses']);
+                $query = $this->db->get();
+            }else{
+                $this->db->select('tbl_antrian.*, tbl_layanan.kode as kode_layanan, tbl_antrian.status as status_antrian');
+                $this->db->from('tbl_antrian');
+                $this->db->join('tbl_layanan', 'tbl_layanan.id_layanan = tbl_antrian.id_layanan', 'left');
+                $this->db->where('tbl_antrian.id', $id_antrian);
+                $this->db->where('tbl_antrian.jenis_antrian', 'non_booking');
+                $this->db->where('DATE(tbl_antrian.waktu_buat)', $today);
+                $this->db->where_in('tbl_antrian.status', ['panggil', 'proses']);
+                $query = $this->db->get();
+            }
+            
+        
+        }else{
+            if($jenis_loket == '1'){
+                $this->db->select('tbl_antrian.*, tbl_layanan.kode as kode_layanan, tbl_antrian.status as status_antrian');
+                $this->db->from('tbl_antrian');
+                $this->db->join('tbl_layanan', 'tbl_layanan.id_layanan = tbl_antrian.id_layanan', 'left');
+                $this->db->where('tbl_antrian.status', 'buat');
+                $this->db->where('tbl_antrian.jenis_antrian', 'booking');
+                // $this->db->where('DATE(tbl_antrian.waktu_buat)', $today);
+                $this->db->where('tbl_antrian.id_waktu_booking', $data_jam);
+                $this->db->where('tbl_antrian.id_layanan', $id_layanan);
+                $this->db->limit(1);
+                $query = $this->db->get();
+            }else{
+                $this->db->select('tbl_antrian.*, tbl_layanan.kode as kode_layanan, tbl_antrian.status as status_antrian');
+                $this->db->from('tbl_antrian');
+                $this->db->join('tbl_layanan', 'tbl_layanan.id_layanan = tbl_antrian.id_layanan', 'left');
+                $this->db->where('tbl_antrian.status', 'buat');
+                $this->db->where('tbl_antrian.jenis_antrian', 'non_booking');
+                $this->db->where('DATE(tbl_antrian.waktu_buat)', $today);
+                $this->db->where('tbl_antrian.id_layanan', $id_layanan);
+                $this->db->limit(1);
+                $query = $this->db->get();
+            }
+            
+        }
+    
+        // Memeriksa apakah ada hasil
+        if ($query->num_rows() > 0) {
+            // Mengembalikan data dalam format JSON
+            echo json_encode($query->result());
+        } else {
+            // Jika tidak ada antrian, kembalikan pesan default
+            echo json_encode(['nomor_antrian' => 'Tidak ada antrian']);
+        }
+    }
+
+    public function get_active_booking_id() {
+        // Ambil data dari database
+        $data_jam = $this->M_Model->get_data('tbl_waktu_booking');
+        
+        // Waktu sekarang
+        $current_time = date('H:i');
+        $ts_now = strtotime($current_time);
+
+        foreach ($data_jam as $waktu) {
+            // Asumsi struktur tabel memiliki: id, jam_mulai, jam_selesai
+            $ts_start = strtotime($waktu['waktu_awal']);
+            $ts_end = strtotime($waktu['waktu_akhir']);
+
+            if ($ts_now >= $ts_start && $ts_now <= $ts_end) {
+                return $waktu['id_waktu_booking']; // Kembalikan ID langsung
+            }
+        }
+
+        return null; // Tidak ada yang aktif
+    }
+
+    public function update_status_antrian() {
+        // Ambil data dari input POST
+        $id_antrian = $this->input->post('id_antrian');
+        $status = $this->input->post('status'); // Status baru: panggil, proses, selesai, batal
+        $id_loket = $this->input->post('id_loket'); // ID loket yang terkait
+
+        // Validasi input
+        if (empty($id_antrian)) {
+            echo json_encode(['status' => 'error', 'message' => 'ID Antrian tidak boleh kosong']);
+            return;
+        }
+
+        if (empty($status)) {
+            echo json_encode(['status' => 'error', 'message' => 'Status tidak boleh kosong']);
+            return;
+        }
+
+        if (empty($id_loket)) {
+            echo json_encode(['status' => 'error', 'message' => 'ID Loket tidak boleh kosong']);
+            return;
+        }
+
+        // Mulai transaksi database
+        $this->db->trans_start();
+
+        // Update tabel tbl_loket berdasarkan status
+        if ($status == 'batal' || $status == 'selesai') {
+            // Jika status adalah batal atau selesai, set id_antrian di tbl_loket menjadi 0
+            $this->db->where('id_loket', $id_loket);
+            $this->db->update('tbl_loket', ['id_antrian' => 0]);
+        } else {
+            // Jika status adalah panggil atau proses, update id_antrian di tbl_loket
+            $this->db->where('id_loket', $id_loket);
+            $this->db->update('tbl_loket', ['id_antrian' => $id_antrian]);
+        }
+
+        // Update status antrian dan waktu terkait di tabel tbl_antrian
+        $update_data = ['status' => $status];
+
+        // Tambahkan kolom waktu berdasarkan status
+        switch ($status) {
+            case 'panggil':
+                $update_data['waktu_panggil'] = date('Y-m-d H:i:s'); // Waktu saat ini
+                break;
+            case 'proses':
+                $update_data['waktu_proses'] = date('Y-m-d H:i:s'); // Waktu saat ini
+                break;
+            case 'selesai':
+                $update_data['waktu_selesai'] = date('Y-m-d H:i:s'); // Waktu saat ini
+                break;
+            case 'batal':
+                $update_data['waktu_batal'] = date('Y-m-d H:i:s'); // Waktu saat ini
+                break;
+        }
+
+        $this->db->where('id', $id_antrian);
+        $this->db->update('tbl_antrian', $update_data);
+
+        // Selesaikan transaksi
+        $this->db->trans_complete();
+
+        // Cek apakah transaksi berhasil
+        if ($this->db->trans_status() === FALSE) {
+            // Jika transaksi gagal, kembalikan pesan error
+            echo json_encode(['status' => 'error', 'message' => 'Gagal mengupdate status antrian']);
+        } else {
+            // Jika transaksi berhasil, kembalikan pesan sukses
+            echo json_encode(['status' => 'success', 'message' => 'Status antrian berhasil diupdate']);
+        }
+    }
+
+    public function get_daftar_antrian_booking() {
+        $today = date('Y-m-d'); // Ambil tanggal hari ini
+
+        $this->db->select('tbl_antrian.*, tbl_layanan.kode as kode_layanan, tbl_layanan.nama as nama_layanan,tbl_antrian.waktu_buat,CONCAT(DATE_FORMAT(tbl_antrian.waktu_buat, "%d-%m-%Y")," ",TIME_FORMAT(tbl_waktu_booking.waktu_awal, "%H:%i"), " - ", TIME_FORMAT(tbl_waktu_booking.waktu_akhir, "%H:%i")) AS waktu_booking');
         $this->db->from('tbl_antrian');
         $this->db->join('tbl_layanan', 'tbl_layanan.id_layanan = tbl_antrian.id_layanan', 'left');
-        $this->db->where('tbl_antrian.id', $id_antrian);
-        $this->db->where('DATE(tbl_antrian.waktu_buat)', $today);
-        $this->db->where_in('tbl_antrian.status', ['panggil', 'proses']);
+        $this->db->join('tbl_waktu_booking', 'tbl_waktu_booking.id_waktu_booking = tbl_antrian.id_waktu_booking', 'left');
+        $this->db->where('DATE(tbl_antrian.waktu_buat)', $today); // Filter berdasarkan tanggal hari ini
+        $this->db->where('jenis_antrian', 'booking'); // Filter berdasarkan tanggal hari ini
+        $this->db->order_by('tbl_antrian.waktu_buat', 'ASC');
         $query = $this->db->get();
-       
-    }else{
-        $this->db->select('tbl_antrian.*, tbl_layanan.kode as kode_layanan, tbl_antrian.status as status_antrian');
+
+        if ($query->num_rows() > 0) {
+            echo json_encode($query->result());
+        } else {
+            echo json_encode([]);
+        }
+    }
+
+    public function get_daftar_antrian_non_booking() {
+        $today = date('Y-m-d'); // Ambil tanggal hari ini
+
+        $this->db->select('tbl_antrian.*, tbl_layanan.kode as kode_layanan, tbl_layanan.nama as nama_layanan');
         $this->db->from('tbl_antrian');
         $this->db->join('tbl_layanan', 'tbl_layanan.id_layanan = tbl_antrian.id_layanan', 'left');
-        $this->db->where('tbl_antrian.status', 'buat');
-        $this->db->where('DATE(tbl_antrian.waktu_buat)', $today);
-        $this->db->where('tbl_antrian.id_layanan', $id_layanan);
-        $this->db->limit(1);
+        $this->db->where('DATE(tbl_antrian.waktu_buat)', $today); // Filter berdasarkan tanggal hari ini
+        $this->db->where('jenis_antrian', 'non_booking'); // Filter berdasarkan tanggal hari ini
+        $this->db->order_by('tbl_antrian.waktu_buat', 'ASC');
         $query = $this->db->get();
+
+        if ($query->num_rows() > 0) {
+            echo json_encode($query->result());
+        } else {
+            echo json_encode([]);
+        }
     }
-  
-    // Memeriksa apakah ada hasil
-    if ($query->num_rows() > 0) {
-        // Mengembalikan data dalam format JSON
-        echo json_encode($query->result());
-    } else {
-        // Jika tidak ada antrian, kembalikan pesan default
-        echo json_encode(['nomor_antrian' => 'Tidak ada antrian']);
-    }
-}
-
-public function update_status_antrian() {
-    // Ambil data dari input POST
-    $id_antrian = $this->input->post('id_antrian');
-    $status = $this->input->post('status'); // Status baru: panggil, proses, selesai, batal
-    $id_loket = $this->input->post('id_loket'); // ID loket yang terkait
-
-    // Validasi input
-    if (empty($id_antrian)) {
-        echo json_encode(['status' => 'error', 'message' => 'ID Antrian tidak boleh kosong']);
-        return;
-    }
-
-    if (empty($status)) {
-        echo json_encode(['status' => 'error', 'message' => 'Status tidak boleh kosong']);
-        return;
-    }
-
-    if (empty($id_loket)) {
-        echo json_encode(['status' => 'error', 'message' => 'ID Loket tidak boleh kosong']);
-        return;
-    }
-
-    // Mulai transaksi database
-    $this->db->trans_start();
-
-    // Update tabel tbl_loket berdasarkan status
-    if ($status == 'batal' || $status == 'selesai') {
-        // Jika status adalah batal atau selesai, set id_antrian di tbl_loket menjadi 0
-        $this->db->where('id_loket', $id_loket);
-        $this->db->update('tbl_loket', ['id_antrian' => 0]);
-    } else {
-        // Jika status adalah panggil atau proses, update id_antrian di tbl_loket
-        $this->db->where('id_loket', $id_loket);
-        $this->db->update('tbl_loket', ['id_antrian' => $id_antrian]);
-    }
-
-    // Update status antrian dan waktu terkait di tabel tbl_antrian
-    $update_data = ['status' => $status];
-
-    // Tambahkan kolom waktu berdasarkan status
-    switch ($status) {
-        case 'panggil':
-            $update_data['waktu_panggil'] = date('Y-m-d H:i:s'); // Waktu saat ini
-            break;
-        case 'proses':
-            $update_data['waktu_proses'] = date('Y-m-d H:i:s'); // Waktu saat ini
-            break;
-        case 'selesai':
-            $update_data['waktu_selesai'] = date('Y-m-d H:i:s'); // Waktu saat ini
-            break;
-        case 'batal':
-            $update_data['waktu_batal'] = date('Y-m-d H:i:s'); // Waktu saat ini
-            break;
-    }
-
-    $this->db->where('id', $id_antrian);
-    $this->db->update('tbl_antrian', $update_data);
-
-    // Selesaikan transaksi
-    $this->db->trans_complete();
-
-    // Cek apakah transaksi berhasil
-    if ($this->db->trans_status() === FALSE) {
-        // Jika transaksi gagal, kembalikan pesan error
-        echo json_encode(['status' => 'error', 'message' => 'Gagal mengupdate status antrian']);
-    } else {
-        // Jika transaksi berhasil, kembalikan pesan sukses
-        echo json_encode(['status' => 'success', 'message' => 'Status antrian berhasil diupdate']);
-    }
-}
-
-public function get_daftar_antrian_hari_ini() {
-    $today = date('Y-m-d'); // Ambil tanggal hari ini
-
-    $this->db->select('tbl_antrian.*, tbl_layanan.kode as kode_layanan, tbl_layanan.nama as nama_layanan,, CONCAT(tbl_layanan.kode, tbl_antrian.no_antrian) as no_antrian');
-    $this->db->from('tbl_antrian');
-    $this->db->join('tbl_layanan', 'tbl_layanan.id_layanan = tbl_antrian.id_layanan', 'left');
-    $this->db->where('DATE(tbl_antrian.waktu_buat)', $today); // Filter berdasarkan tanggal hari ini
-    $this->db->order_by('tbl_antrian.waktu_buat', 'ASC');
-    $query = $this->db->get();
-
-    if ($query->num_rows() > 0) {
-        echo json_encode($query->result());
-    } else {
-        echo json_encode([]);
-    }
-}
   
 }

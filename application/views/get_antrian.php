@@ -8,7 +8,7 @@
     <meta name="description" content="QTrack - Sistem Antrian Online">
     <meta name="author" content="">
 
-    <title>QTrack - Antrian</title>
+    <title><?php echo get_web_info('nama_web'); ?> - Antrian</title>
 
     <!-- Custom fonts -->
     <link href="<?= base_url('assets/'); ?>vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -111,12 +111,15 @@
 
 <body class="bg-gradient-primary">
     <div class="header">
-        <h2 class="text-primary text-center">QTRACK</h2>
+        <h2 class="text-primary text-center"><?php echo get_web_info('nama_web'); ?></h2>
         <div class="address">
-            Bank Muamalat KC Karawang
+            <?php echo get_web_info('alamat'); ?>
         </div>
     </div>
 
+    <button class="btn btn-danger btn-sm" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Keluar
+    </button>
     <div class="container">
         <!-- Outer Row -->
         <div class="row justify-content-center mt-5">
@@ -144,7 +147,7 @@
     </div>
 
     <div class="footer">
-        &copy; 2025 QTrack. All rights reserved. | Designed by <a href="#" style="color: #4e73df;">Rofi</a>
+    <?php echo get_web_info('footer'); ?> | Designed by <a href="#" style="color:rgb(255, 191, 0);"><?php echo get_web_info('create_by'); ?></a>
     </div>
 
     <!-- Area yang akan dicetak -->
@@ -155,78 +158,116 @@
         <p>Terima kasih telah menggunakan layanan kami.</p>
     </div>
 
-        <script>
-            // Simpan nomor antrian untuk setiap layanan
-            const nomorAntrian = {};
+    <script>
+        // Format nomor antrian dengan leading zeros
+        function formatNomorAntrian(nomor) {
+            return String(nomor).padStart(3, '0'); // Format ke 3 digit, contoh: 001, 002, dst.
+        }
 
-            // Format nomor antrian dengan leading zeros
-            function formatNomorAntrian(nomor) {
-                return String(nomor).padStart(3, '0'); // Format ke 3 digit, contoh: 001, 002, dst.
-            }
-
-            function ambilAntrian(id_layanan, kode, jenis) {
-                // Inisialisasi nomor antrian jika belum ada
-                if (!nomorAntrian[kode]) {
-                    nomorAntrian[kode] = 0;
+        // Fungsi untuk mendapatkan nomor antrian terakhir dari server
+        function getLastAntrian(kode_layanan, callback) {
+            $.ajax({
+                url: '<?= base_url('GetAntrian/get_last_antrian_'); ?>',
+                type: 'POST',
+                data: {
+                    kode_layanan: kode_layanan
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        callback(response.last_number || 0);
+                    } else {
+                        console.error('Gagal mendapatkan nomor antrian terakhir');
+                        callback(0);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    callback(0);
                 }
+            });
+        }
 
-                // Tambahkan nomor antrian
-                nomorAntrian[kode]++;
-                const nomor = formatNomorAntrian(nomorAntrian[kode]);
+        function ambilAntrian(id_layanan, kode, jenis) {
+            // Dapatkan nomor antrian terakhir dari server
+            getLastAntrian(kode, function(lastNumber) {
+                // Hitung nomor berikutnya
+                const nextNumber = parseInt(lastNumber) + 1;
+                const nomor = formatNomorAntrian(nextNumber);
 
                 // Tampilkan nomor antrian di area printable
                 document.getElementById('nomorAntrian').innerText = `${kode}${nomor}`;
                 document.getElementById('jenisLayanan').innerText = jenis;
 
-                // Kirim data ke server terlebih dahulu
+                // Kirim data ke server
                 simpanAntrian(id_layanan, kode, jenis, nomor);
-            }
+            });
+        }
 
-            function simpanAntrian(id_layanan, kode, jenis, nomor) {
-                $.ajax({
-                    url: '<?= base_url('GetAntrian/simpan_antrian'); ?>',
-                    type: 'POST',
-                    data: {
-                        id_layanan: id_layanan,
-                        kode: kode,
-                        jenis: jenis,
-                        nomor: nomor
-                    },
-                    success: function(response) {
-                        console.log('Response dari server:', response);
+        function simpanAntrian(id_layanan, kode, jenis, nomor) {
+            $.ajax({
+                url: '<?= base_url('GetAntrian/simpan_antrian'); ?>',
+                type: 'POST',
+                data: {
+                    id_layanan: id_layanan,
+                    kode: kode,
+                    jenis: jenis,
+                    nomor: nomor
+                },
+                success: function(response) {
+                    console.log('Response dari server:', response);
 
-                        // Jika data berhasil disimpan, cetak nomor antrian
-                        if (response.status === 'success') {
-                            // Tampilkan area cetak
-                            document.getElementById('printableArea').style.display = 'block';
+                    if (response.status === 'success') {
+                        // Tampilkan area cetak
+                        document.getElementById('printableArea').style.display = 'block';
 
-                            // Cetak langsung
-                            window.print();
+                        // Cetak langsung
+                        window.print();
 
-                            
-                            // Sembunyikan area cetak setelah 3 detik (jika diperlukan)
-                            setTimeout(() => {
-                                document.getElementById('printableArea').style.display = 'none';
-                            }, 1000); // 3000 milidetik = 3 detik
-                        } else {
-                            // Jika gagal menyimpan, tampilkan pesan error
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: 'Gagal menyimpan antrian: ' + response.message
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
+                        // Sembunyikan area cetak setelah 1 detik
+                        setTimeout(() => {
+                            document.getElementById('printableArea').style.display = 'none';
+                        }, 1000);
+                    } else {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error',
-                            text: 'Terjadi kesalahan saat mengirim data ke server.'
+                            title: 'Gagal',
+                            text: 'Gagal menyimpan antrian: ' + response.message
                         });
                     }
-                });
-            }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Terjadi kesalahan saat mengirim data ke server.'
+                    });
+                }
+            });
+        }
+
+    </script>
+
+    <script>
+        // Add this function to handle logout
+        function logout() {
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: "Anda yakin ingin keluar?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Keluar!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '<?= base_url('GetAntrian/keluar'); ?>';
+                }
+            });
+        }
+
+            // [Keep all your existing JavaScript functions]
         </script>
 
         <!-- INI UNTUK BLOUTOT -->

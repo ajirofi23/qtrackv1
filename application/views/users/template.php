@@ -8,7 +8,7 @@
     <meta name="description" content="QTrack - Sistem Antrian Online">
     <meta name="author" content="">
 
-    <title>QTrack - <?= $title; ?></title>
+    <title><?php echo get_web_info('nama_web'); ?> - <?= $title; ?></title>
 
     <!-- Custom fonts -->
     <link href="<?= base_url('assets/'); ?>vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -145,9 +145,9 @@
 
 <body>
     <div class="header">
-        <h2>QTRACK</h2>
+        <h2><?php echo get_web_info('nama_web'); ?></h2>
         <div class="address">
-            Bank Muamalat KC Karawang
+            <?php echo get_web_info('alamat'); ?>
         </div>
     </div>
 
@@ -173,6 +173,30 @@
     </div>
 
     <script>
+        function showSweetAlert(icon, title, redirectUrl = null) {
+            Swal.fire({
+                icon: icon, // 'success', 'error', 'warning', 'info', 'question'
+                title: icon,
+                text: title,
+                showConfirmButton: false, // Disable the OK button
+                backdrop: 'rgba(0,0,0,0.5)', // Semi-transparent background
+                timer: 3000, // Timer (3 seconds)
+                timerProgressBar: true, // Show progress bar
+                allowOutsideClick: false, // Can't close by clicking outside
+                allowEscapeKey: false, // Can't close with ESC key
+                customClass: {
+                    popup: 'animated bounceIn', // Entrance animation (bounceIn)
+                    title: 'swal2-title-custom', // Custom class for title
+                    content: 'swal2-content-custom', // Custom class for content
+                }
+            }).then(() => {
+                if (redirectUrl) {
+                    // Redirect to specified page if redirectUrl is provided
+                    window.location.href = redirectUrl;
+                }
+            });
+        }
+        
         $(document).ready(function() {
             var currentUrl = "<?= uri_string(); ?>"; // Ambil URI segment saat ini
 
@@ -187,7 +211,7 @@
     </script>
 
     <div class="footer">
-        &copy; 2025 QTrack. All rights reserved. | Designed by <a href="#" style="color:rgb(255, 191, 0);">Rofi</a>
+    <?php echo get_web_info('footer'); ?> | Designed by <a href="#" style="color:rgb(255, 191, 0);"><?php echo get_web_info('create_by'); ?></a>
     </div>
 </body>
 

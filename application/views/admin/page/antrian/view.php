@@ -35,7 +35,7 @@
 <div class="row justify-content-center mt-5">
     <?php foreach ($data_loket as $row) : ?>
     <div class="col-md-4 mb-4">
-        <div class="card custom-card" id="loket-antrian-<?= $row['id_layanan']; ?>" data-id-loket="<?= $row['id_loket'];?>" data-id-layanan="<?= $row['id_layanan']; ?>">
+        <div class="card custom-card" id="loket-antrian-<?= $row['id_layanan']; ?>" data-id-loket="<?= $row['id_loket'];?>" data-jenis-loket="<?= $row['jenis'];?>" data-id-layanan="<?= $row['id_layanan']; ?>">
             <div class="card-header custom-card-header bg-primary text-center">
                 <h4 class="text-uppercase text-center" id="jenis_layanan_<?=$row['id_loket'];?>"><?= $row['nama']; ?></h4>
                 <span class="badge badge-<?= ($row['jenis'] == '1') ? 'success' : 'danger';?> text-center"><?= ($row['jenis'] == '1') ? 'BOOKING' : 'NON BOOKING';?></span>
@@ -46,11 +46,11 @@
                 <span class="badge text-center" id="status_antrian"></span>
             </div>
             <div class="card-footer custom-card-footer text-center">
-                <button class="btn btn-sm btn-danger mt-2" id="btn-<?=$row['id_loket'];?>" data-id-antrian="">Batal</button>
-                <button class="btn btn-sm btn-success mt-2" id="btn-<?=$row['id_loket'];?>" data-id-antrian="">Panggil</button>
-                <button class="btn btn-sm btn-secondary mt-2" id="btn-<?= $row['id_loket']; ?>" data-id-antrian="">Ulang</button>
-                <button class="btn btn-sm btn-info mt-2" id="btn-<?=$row['id_loket'];?>" data-id-antrian="">Dilayani</button>
-                <button class="btn btn-sm btn-warning mt-2" id="btn-<?=$row['id_loket'];?>" data-id-antrian="">Selesai</button>
+                <button class="btn btn-sm btn-danger mt-2 btn-antrian btn-batal" id="btn-batal-<?=$row['id_loket'];?>" data-id-antrian="" disabled>Batal</button>
+                <button class="btn btn-sm btn-success mt-2 btn-antrian btn-panggil" id="btn-panggil-<?=$row['id_loket'];?>" data-id-antrian="" disabled>Panggil</button>
+                <button class="btn btn-sm btn-secondary mt-2 btn-antrian btn-ulang" id="btn-ulang-<?=$row['id_loket'];?>" data-id-antrian="" disabled>Ulang</button>
+                <button class="btn btn-sm btn-info mt-2 btn-antrian btn-dilayani" id="btn-dilayani-<?=$row['id_loket'];?>" data-id-antrian="" disabled>Dilayani</button>
+                <button class="btn btn-sm btn-warning mt-2 btn-antrian btn-selesai" id="btn-selesai-<?=$row['id_loket'];?>" data-id-antrian="" disabled>Selesai</button>
             </div>
         </div>
     </div>
@@ -59,14 +59,38 @@
 
 <!-- Tabel Daftar Antrian Hari Ini -->
 <div class="row justify-content-center mt-5">
-    <div class="col-md-12">
+    <div class="col-md-6">
         <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="text-uppercase text-center">Daftar Antrian Hari Ini</h4>
+            <div class="card-header bg-success text-white">
+                <h4 class="text-uppercase text-center">Daftar Antrian Booking</h4>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="daftar-antrian-hari-ini" class="table table-bordered table-striped" width="100%" cellspacing="0">
+                    <table id="daftar-antrian-booking" class="table table-bordered table-striped" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>No. Antrian</th>
+                                <th>Layanan</th>
+                                <th>Status</th>
+                                <th>Waktu Buat</th>
+                            </tr>
+                        </thead>
+                        <tbody >
+                            <!-- Data antrian akan diisi oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="text-uppercase text-center">Daftar Antrian Non Booking</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="daftar-antrian-non-booking" class="table table-bordered table-striped" width="100%" cellspacing="0">
                         <thead>
                             <tr>
                                 <th>No. Antrian</th>
@@ -88,6 +112,7 @@
 <script>
 $(document).ready(function() {
     let currentUtterance = null; // Variabel untuk menyimpan objek SpeechSynthesisUtterance yang sedang berjalan
+    let isSpeaking = false; // Flag untuk menandai status pembicaraan
 
     // Fungsi untuk membaca teks dengan suara
     function speak(text) {
@@ -103,6 +128,17 @@ $(document).ready(function() {
             utterance.rate = 1; // Kecepatan bicara (1 = normal)
             utterance.pitch = 1; // Tinggi nada (1 = normal)
 
+            // Event handler untuk saat pembicaraan selesai
+            utterance.onend = function() {
+                isSpeaking = false;
+                currentUtterance = null;
+            };
+
+            // Event handler untuk saat pembicaraan dimulai
+            utterance.onstart = function() {
+                isSpeaking = true;
+            };
+
             // Simpan objek utterance ke variabel global
             currentUtterance = utterance;
 
@@ -115,32 +151,44 @@ $(document).ready(function() {
 
     // Fungsi untuk memanggil antrian
     function panggilAntrian(id_loket, id_antrian) {
+        console.log(id_antrian);
+        if (isSpeaking) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Sedang memanggil antrian lain, tunggu hingga selesai'
+            });
+            return;
+        }
+
         $.ajax({
             url: '<?= base_url("AntrianController/update_status_antrian"); ?>',
             method: 'POST',
             data: {
                 id_antrian: id_antrian,
-                status: 'panggil', // Status panggil
+                status: 'panggil',
                 id_loket: id_loket
             },
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    // Ambil nomor antrian dan jenis layanan
                     var nomorAntrian = $('#nomor_antrian_' + id_loket).text();
                     var jenisLayanan = $('#jenis_layanan_' + id_loket).text();
 
-                    // Buat teks untuk diucapkan
-                    var textToSpeak = `Nomor antrian ${nomorAntrian}, silakan menuju loket ${id_loket}, untuk layanan ${jenisLayanan}.`;
-
-                    // Baca teks menggunakan Web Speech API
+                    var textToSpeak = `Nomor antrian ${nomorAntrian}, silakan menuju loket ${jenisLayanan}.`;
                     speak(textToSpeak);
 
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil',
-                        text: 'Antrian berhasil dipanggil'
+                        text: 'Antrian berhasil dipanggil',
+                        timer: 2000,
+                        showConfirmButton: false
                     });
+
+                    // Update display setelah berhasil mengupdate status
+                    updateAntrianDisplay();
+                    reloadDataTables();
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -162,26 +210,31 @@ $(document).ready(function() {
 
     // Fungsi untuk mengulang panggilan antrian
     function ulangPanggilan(id_loket) {
-        // Ambil nomor antrian dan jenis layanan
+        if (isSpeaking) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Sedang memanggil antrian lain, tunggu hingga selesai'
+            });
+            return;
+        }
+
         var nomorAntrian = $('#nomor_antrian_' + id_loket).text();
         var jenisLayanan = $('#jenis_layanan_' + id_loket).text();
-
-        // Buat teks untuk diucapkan
         var textToSpeak = `Nomor antrian ${nomorAntrian}, silakan menuju loket ${jenisLayanan}.`;
-
-        // Baca teks menggunakan Web Speech API
         speak(textToSpeak);
     }
 
     // Fungsi untuk mengupdate status antrian
     function updateStatusAntrian(id_loket, id_antrian, status) {
+        const $card = $(this);
         $.ajax({
             url: '<?= base_url("AntrianController/update_status_antrian"); ?>',
             method: 'POST',
             data: {
                 id_loket: id_loket,
                 id_antrian: id_antrian,
-                status: status // Status: proses, selesai, batal
+                status: status
             },
             dataType: 'json',
             success: function(response) {
@@ -189,8 +242,16 @@ $(document).ready(function() {
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil',
-                        text: 'Status antrian berhasil diupdate'
+                        text: 'Status antrian berhasil diupdate',
+                        timer: 2000,
+                        showConfirmButton: false
                     });
+                    $card.find('.btn-antrian').each(function() {
+                        $(this).removeAttr('data-id-antrian');
+                    });
+                    // Update display setelah berhasil mengupdate status
+                    updateAntrianDisplay();
+                    reloadDataTables();
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -210,75 +271,162 @@ $(document).ready(function() {
         });
     }
 
-    
-    // Set interval untuk mengambil data antrian setiap 1 detik
-    setInterval(function() {
+    // Fungsi untuk mendapatkan warna badge berdasarkan status
+    function getBadgeColor(status) {
+        const statusColors = {
+            'buat': 'secondary',
+            'panggil': 'success',
+            'proses': 'info',
+            'selesai': 'warning',
+            'batal': 'danger'
+        };
+        return statusColors[status] || 'secondary';
+    }
+
+    // Inisialisasi DataTables
+    let tableBooking, tableNonBooking;
+
+    function initDataTables() {
+        tableBooking = $('#daftar-antrian-booking').DataTable({
+            ajax: {
+                url: '<?= base_url("AntrianController/get_daftar_antrian_booking"); ?>',
+                type: 'GET',
+                dataSrc: ''
+            },
+            columns: [
+                { data: 'no_antrian', title: 'No. Antrian' },
+                { data: 'nama_layanan', title: 'Layanan' },
+                { 
+                    data: 'status', 
+                    title: 'Status',
+                    render: function(data) {
+                        const badgeColor = getBadgeColor(data);
+                        return `<span class="badge badge-${badgeColor}">${data}</span>`;
+                    }
+                },
+                { 
+                    data: 'waktu_booking', 
+                    title: 'Waktu Booking'
+                }
+            ],
+            responsive: true,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+            }
+        });
+
+        tableNonBooking = $('#daftar-antrian-non-booking').DataTable({
+            ajax: {
+                url: '<?= base_url("AntrianController/get_daftar_antrian_non_booking"); ?>',
+                type: 'GET',
+                dataSrc: ''
+            },
+            columns: [
+                { data: 'no_antrian', title: 'No. Antrian' },
+                { data: 'nama_layanan', title: 'Layanan' },
+                { 
+                    data: 'status', 
+                    title: 'Status',
+                    render: function(data) {
+                        const badgeColor = getBadgeColor(data);
+                        return `<span class="badge badge-${badgeColor}">${data}</span>`;
+                    }
+                },
+                { 
+                    data: 'waktu_buat', 
+                    title: 'Waktu Buat'
+                }
+            ],
+            responsive: true,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+            }
+        });
+    }
+
+    // Fungsi untuk memperbarui tampilan antrian
+    function updateAntrianDisplay() {
         $('.custom-card').each(function() {
-            var id_loket = $(this).data('id-loket'); // Ambil id_loket dari data attribute
-            var id_layanan = $(this).data('id-layanan'); // Ambil id_layanan dari data attribute
-            var $display = $(this).find('.display-4'); // Temukan elemen untuk menampilkan nomor antrian
-            var $status_antrian = $(this).find('#status_antrian'); // Temukan elemen untuk menampilkan status antrian
+            const $card = $(this);
+            const id_loket = $card.data('id-loket');
+            const jenis_loket = $card.data('jenis-loket');
+            const id_layanan = $card.data('id-layanan');
+            const $display = $card.find('.display-4');
+            const $status_antrian = $card.find('#status_antrian');
+            
+            const $btnBatal = $card.find('.btn-batal');
+            const $btnPanggil = $card.find('.btn-panggil');
+            const $btnUlang = $card.find('.btn-ulang');
+            const $btnDilayani = $card.find('.btn-dilayani');
+            const $btnSelesai = $card.find('.btn-selesai');
+            
             $.ajax({
-                url: '<?= base_url("AntrianController/get_antrian");?>', // Ganti dengan path ke file PHP Anda
+                url: '<?= base_url("AntrianController/get_antrian");?>',
                 method: 'POST',
-                data: { id_layanan: id_layanan, id_loket: id_loket }, // Kirim id_layanan dan id_loket sebagai parameter
+                data: { 
+                    id_layanan: id_layanan, 
+                    id_loket: id_loket,
+                    jenis_loket: jenis_loket 
+                },
                 dataType: 'json',
                 success: function(data) {
-                    // Memeriksa apakah data yang diterima tidak kosong
-                    if (data.length > 0) {
-                        // Mengambil semua nomor antrian dan status antrian dari data
-                        var nomor_antrian = data.map(function(item) {
-                            return item.no_antrian; // Mengambil nomor antrian dari setiap objek
-                        }).join(', '); // Menggabungkan nomor antrian menjadi string
+                    if (data && data.length > 0 && data[0].no_antrian !== '0') {
+                        const nomor_antrian = data.map(item => item.no_antrian).join(', ');
+                        const status_antrian = data.map(item => item.status_antrian);
+                        const id_antrians = data.map(item => item.id);
 
-                        var kode_layanan = data.map(function(item) {
-                            return item.kode_layanan; // Mengambil kode layanan dari setiap objek
-                        }).join(', '); // Menggabungkan kode layanan menjadi string
-
-                        var status_antrian = data.map(function(item) {
-                            return item.status_antrian; // Mengambil status antrian dari setiap objek
+                        $card.find('.btn-antrian').each(function() {
+                            $(this).attr('data-id-antrian', id_antrians[0]);
                         });
-                        var id_antrians = data.map(function(item) {
-                            return item.id; // Mengambil id antrian dari setiap objek
-                        });
-
-                        $('[id^="btn-' + id_loket + '"]').attr('data-id-antrian', id_antrians);
                         
-                        // Inisialisasi variabel sa dan badge_color
-                        var sa;
-                        var badge_color;
-
-                        // Memeriksa status antrian
-                        if (status_antrian.every(function(status) { return status === 'buat'; })) {
+                        let sa, badge_color;
+                        if (status_antrian.every(status => status === 'buat')) {
                             sa = 'menunggu';
                             badge_color = 'badge-secondary';
-                        } else if (status_antrian.some(function(status) { return status === 'panggil'; })) {
+                            $btnPanggil.prop('disabled', false);
+                            $btnUlang.prop('disabled', false);
+                            $btnBatal.prop('disabled', false);
+                            $btnDilayani.prop('disabled', true);
+                            $btnSelesai.prop('disabled', true);
+                        } else if (status_antrian.some(status => status === 'panggil')) {
                             sa = 'Sedang Memanggil';
                             badge_color = 'badge-success';
-                        } else if (status_antrian.some(function(status) { return status === 'proses'; })) {
+                            $btnPanggil.prop('disabled', true);
+                            $btnUlang.prop('disabled', false);
+                            $btnBatal.prop('disabled', false);
+                            $btnDilayani.prop('disabled', false);
+                            $btnSelesai.prop('disabled', true);
+                        } else if (status_antrian.some(status => status === 'proses')) {
                             sa = 'Sedang Melayani';
                             badge_color = 'badge-info';
-                        } else if (status_antrian.some(function(status) { return status === 'selesai'; })) {
+                            $btnPanggil.prop('disabled', true);
+                            $btnUlang.prop('disabled', true);
+                            $btnBatal.prop('disabled', false);
+                            $btnDilayani.prop('disabled', true);
+                            $btnSelesai.prop('disabled', false);
+                        } else if (status_antrian.some(status => status === 'selesai')) {
                             sa = 'Antrian Selesai';
                             badge_color = 'badge-warning';
+                            $btnPanggil.prop('disabled', true);
+                            $btnUlang.prop('disabled', false);
+                            $btnBatal.prop('disabled', true);
+                            $btnDilayani.prop('disabled', true);
+                            $btnSelesai.prop('disabled', true);
                         } else {
-                            sa = 'Antrian dibatalkan'; // Status lain yang tidak terduga
+                            sa = 'Antrian dibatalkan';
                             badge_color = 'badge-danger';
+                            $card.find('.btn-antrian').prop('disabled', true);
                         }
 
-                        // Memperbarui tampilan
-                        $display.text(kode_layanan + nomor_antrian); // Memperbarui nomor antrian di dalam elemen
-                        $status_antrian.text(sa); // Memperbarui status antrian di dalam elemen
-                        $status_antrian.removeClass().addClass('badge ' + badge_color); // Mengatur kelas badge
-                        // Memperbarui data-id-antrian pada semua tombol
-                       
-
+                        $display.text(nomor_antrian);
+                        $status_antrian.text(sa).removeClass().addClass('badge ' + badge_color);
                     } else {
-                        $display.text('0'); // Menampilkan pesan jika tidak ada antrian
-                        $status_antrian.text('Tidak ada antrian'); // Memperbarui status antrian di dalam elemen
-                        $status_antrian.removeClass().addClass('badge badge-danger'); // Mengatur kelas badge
-
-                        
+                        $display.text('0');
+                        $status_antrian.text('Tidak ada antrian').removeClass().addClass('badge badge-danger');
+                        // PERBAIKAN: Hapus data-id-antrian dari semua tombol di card ini
+                        $card.find('.btn-antrian').each(function() {
+                            $(this).removeAttr('data-id-antrian');
+                        });
                     }
                 },
                 error: function(xhr, status, error) {
@@ -286,83 +434,47 @@ $(document).ready(function() {
                 }
             });
         });
-    }, 1000); // 1000 ms = 1 detik
+    }
 
-    // Event listener untuk tombol
-    $('[id^="btn-"]').on('click', function() {
-        var id_loket = $(this).closest('.card').data('id-loket');
-        var id_antrian = $(this).data('id-antrian');
-        var action = $(this).text().toLowerCase(); // Ambil aksi dari teks tombol
-
-        if (action === 'panggil') {
-            panggilAntrian(id_loket, id_antrian);
-        } else if (action === 'dilayani') {
-            updateStatusAntrian(id_loket, id_antrian, 'proses');
-        } else if (action === 'selesai') {
-            updateStatusAntrian(id_loket, id_antrian, 'selesai');
-        } else if (action === 'batal') {
-            updateStatusAntrian(id_loket, id_antrian, 'batal');
-        } else if (action === 'ulang') {
-            ulangPanggilan(id_loket);
+    // Fungsi untuk reload DataTables
+    function reloadDataTables() {
+        if (tableBooking) {
+            tableBooking.ajax.reload(null, false);
         }
-    });
-
-    // // Memuat daftar antrian hari ini saat halaman dimuat
-    // loadDaftarAntrianHariIni();
-
-    // Fungsi untuk mendapatkan warna badge berdasarkan status
-    function getBadgeColor(status) {
-        switch (status) {
-            case 'buat':
-                return 'secondary';
-            case 'panggil':
-                return 'success';
-            case 'proses':
-                return 'info';
-            case 'selesai':
-                return 'warning';
-            case 'batal':
-                return 'danger';
-            default:
-                return 'secondary';
+        if (tableNonBooking) {
+            tableNonBooking.ajax.reload(null, false);
         }
     }
 
-    // Inisialisasi DataTables
-    var table = $('#daftar-antrian-hari-ini').DataTable({
-        ajax: {
-            url: '<?= base_url("AntrianController/get_daftar_antrian_hari_ini"); ?>',
-            type: 'GET',
-            dataSrc: '' // Jika data langsung berupa array, biarkan kosong
-        },
-        columns: [
-            { data: 'no_antrian', title: 'No. Antrian' },
-            { data: 'nama_layanan', title: 'Layanan' },
-            { 
-                data: 'status', 
-                title: 'Status',
-                render: function(data, type, row) {
-                    var badgeColor = getBadgeColor(data);
-                    return `<span class="badge badge-${badgeColor}">${data}</span>`;
-                }
-            },
-            { data: 'waktu_buat', title: 'Waktu Buat' }
-        ],
-        responsive: true,
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
-        }
-    });
-
-    // Fungsi untuk memperbarui data tabel setiap 1 detik
-    function reloadTable() {
-        console.log("Memperbarui tabel...");
-        table.ajax.reload(null, false); // false untuk mempertahankan paging
-    }
-
-    // Set interval untuk memanggil fungsi reloadTable setiap 1 detik
-    setInterval(reloadTable, 1000);
     
+    // Inisialisasi DataTables saat pertama kali load
+    initDataTables();
+    
+    // Update display saat pertama kali load
+    updateAntrianDisplay();
+
+    // Event delegation untuk tombol
+    $(document).on('click', '[id^="btn-"]', function() {
+
+        const $btn = $(this);
+        const id_loket = $btn.closest('.card').data('id-loket');
+        const id_antrian = $btn.data('id-antrian');
+        const action = $btn.text().trim().toLowerCase();
+
+        
+        const actions = {
+            'panggil': () => panggilAntrian(id_loket, id_antrian),
+            'dilayani': () => updateStatusAntrian(id_loket, id_antrian, 'proses'),
+            'selesai': () => updateStatusAntrian(id_loket, id_antrian, 'selesai'),
+            'batal': () => updateStatusAntrian(id_loket, id_antrian, 'batal'),
+            'ulang': () => ulangPanggilan(id_loket)
+        };
+
+        if (actions[action]) {
+            actions[action]();
+            
+        }
+    });
 });
 
 </script>
