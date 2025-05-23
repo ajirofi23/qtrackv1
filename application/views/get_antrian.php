@@ -271,7 +271,7 @@
         </script>
 
         <!-- INI UNTUK BLOUTOT -->
-    <!-- <script>
+    <script>
         // Simpan nomor antrian untuk setiap layanan
         const nomorAntrian = {};
 
@@ -395,7 +395,7 @@
                 });
             });
         }
-    </script> -->
+    </script> 
 </body>
 
 </html>
