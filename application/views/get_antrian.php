@@ -212,14 +212,15 @@
                 // Tampilkan nomor antrian di area printable
                 document.getElementById('nomorAntrian').innerText = `${kode}${nomor}`;
                 document.getElementById('jenisLayanan').innerText = jenis;
+                // Clear previous QR code
+                document.getElementById('qrcode').innerHTML = '';
                 // Generate QR code
                 var qr = new QRious({
-                    element: document.getElementById('qrcode'),
+                    element: document.createElement('canvas'),
                     value: `${kode}${nomor}`,
                     size: 100
                 });
-
-                // Kirim data ke server
+                document.getElementById('qrcode').appendChild(qr.element);
                 simpanAntrian(id_layanan, kode, jenis, nomor);
             });
         }
@@ -429,6 +430,10 @@
         }
         .printable, .printable * {
             visibility: visible !important;
+        }
+        #qrcode {
+            display: block !important;
+            margin: 10px auto 0 auto;
         }
         .printable {
             position: absolute;
