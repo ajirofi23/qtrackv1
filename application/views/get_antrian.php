@@ -104,12 +104,15 @@
                 width: 5.5cm;
                 min-width: 5.5cm;
                 max-width: 5.5cm;
+                height: 8cm;
+                min-height: 8cm;
+                max-height: 8cm;
                 text-align: center;
                 font-size: 24px;
                 margin: 0 auto;
             }
             @page {
-                size: 5.5cm auto;
+                size: 5.5cm 8cm;
                 margin: 0;
             }
         }
