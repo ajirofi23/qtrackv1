@@ -101,9 +101,9 @@
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 5.5cm;
-                min-width: 5.5cm;
-                max-width: 5.5cm;
+                width: 5.8cm;
+                min-width: 5.8cm;
+                max-width: 5.8cm;
                 height: 8cm;
                 min-height: 8cm;
                 max-height: 8cm;
@@ -112,11 +112,11 @@
                 margin: 0 auto;
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-start;
+                justify-content: flex-start; /* Ensures text is at the top */
                 align-items: center;
             }
             @page {
-                size: 5.5cm 8cm;
+                size: 5.8cm 8cm;
                 margin: 0;
             }
         }
@@ -229,18 +229,17 @@
                 },
                 success: function(response) {
                     console.log('Response dari server:', response);
-
                     if (response.status === 'success') {
-                        // Tampilkan area cetak
+                        // Show printable area
                         document.getElementById('printableArea').style.display = 'block';
-
-                        // Cetak langsung
-                        window.print();
-
-                        // Sembunyikan area cetak setelah 1 detik
-                        setTimeout(() => {
-                            document.getElementById('printableArea').style.display = 'none';
-                        }, 1000);
+                        // Wait a moment to ensure DOM is updated, then print
+                        setTimeout(function() {
+                            window.print();
+                            // Hide printable area after printing
+                            setTimeout(function() {
+                                document.getElementById('printableArea').style.display = 'none';
+                            }, 500);
+                        }, 100);
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -419,18 +418,18 @@
     }
     @media print {
         body * {
-            visibility: hidden;
+            visibility: hidden !important;
         }
         .printable, .printable * {
-            visibility: visible;
+            visibility: visible !important;
         }
         .printable {
             position: absolute;
             left: 0;
             top: 0;
-            width: 5.5cm;
-            min-width: 5.5cm;
-            max-width: 5.5cm;
+            width: 5.8cm;
+            min-width: 5.8cm;
+            max-width: 5.8cm;
             height: 8cm;
             min-height: 8cm;
             max-height: 8cm;
@@ -441,9 +440,15 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
+            background: #fff;
+            color: #000;
+        }
+        .printable h2, .printable p {
+            margin: 0;
+            padding: 0;
         }
         @page {
-            size: 5.5cm 8cm;
+            size: 5.8cm 8cm;
             margin: 0;
         }
     }
