@@ -110,6 +110,10 @@
                 text-align: center;
                 font-size: 24px;
                 margin: 0 auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
             }
             @page {
                 size: 5.5cm 8cm;
@@ -406,6 +410,44 @@
             });
         }
     </script>  -->
+</body>
+
+</html>
+<style>
+    .printable {
+        display: none;
+    }
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .printable, .printable * {
+            visibility: visible;
+        }
+        .printable {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 5.5cm;
+            min-width: 5.5cm;
+            max-width: 5.5cm;
+            height: 8cm;
+            min-height: 8cm;
+            max-height: 8cm;
+            text-align: center;
+            font-size: 24px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        @page {
+            size: 5.5cm 8cm;
+            margin: 0;
+        }
+    }
+</style>
 </body>
 
 </html>
