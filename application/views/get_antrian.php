@@ -168,6 +168,7 @@
     <div class="printable" id="printableArea">
         <h2 style="font-weight: bold;">Nomor Antrian</h2>
         <p style="font-size: 40px; font-weight: bold;" id="nomorAntrian"></p>
+        <div id="qrcode"></div> <!-- QR code will appear here -->
         <p id="jenisLayanan"></p>
         <p>Terima kasih telah menggunakan layanan kami.</p>
     </div>
@@ -211,6 +212,12 @@
                 // Tampilkan nomor antrian di area printable
                 document.getElementById('nomorAntrian').innerText = `${kode}${nomor}`;
                 document.getElementById('jenisLayanan').innerText = jenis;
+                // Generate QR code
+                var qr = new QRious({
+                    element: document.getElementById('qrcode'),
+                    value: `${kode}${nomor}`,
+                    size: 100
+                });
 
                 // Kirim data ke server
                 simpanAntrian(id_layanan, kode, jenis, nomor);
@@ -456,3 +463,63 @@
 </body>
 
 </html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>
+    function ambilAntrian(id_layanan, kode, jenis) {
+        // Dapatkan nomor antrian terakhir dari server
+        getLastAntrian(kode, function(lastNumber) {
+            // Hitung nomor berikutnya
+            const nextNumber = parseInt(lastNumber) + 1;
+            const nomor = formatNomorAntrian(nextNumber);
+    
+            // Tampilkan nomor antrian di area printable
+            document.getElementById('nomorAntrian').innerText = `${kode}${nomor}`;
+            document.getElementById('jenisLayanan').innerText = jenis;
+    
+            // Kirim data ke server
+            simpanAntrian(id_layanan, kode, jenis, nomor);
+        });
+    }
+
+    function simpanAntrian(id_layanan, kode, jenis, nomor) {
+        $.ajax({
+            url: '<?= base_url('GetAntrian/simpan_antrian'); ?>',
+            type: 'POST',
+            data: {
+                id_layanan: id_layanan,
+                kode: kode,
+                jenis: jenis,
+                nomor: nomor
+            },
+            success: function(response) {
+                console.log('Response dari server:', response);
+                if (response.status === 'success') {
+                    // Show printable area
+                    document.getElementById('printableArea').style.display = 'block';
+                    // Wait a moment to ensure DOM is updated, then print
+                    setTimeout(function() {
+                        window.print();
+                        // Hide printable area after printing
+                        setTimeout(function() {
+                            document.getElementById('printableArea').style.display = 'none';
+                        }, 500);
+                    }, 100);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Gagal menyimpan antrian: ' + response.message
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat mengirim data ke server.'
+                });
+            }
+        });
+    }
+</script>
