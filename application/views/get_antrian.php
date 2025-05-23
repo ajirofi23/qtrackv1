@@ -101,9 +101,16 @@
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 100%;
+                width: 5.5cm;
+                min-width: 5.5cm;
+                max-width: 5.5cm;
                 text-align: center;
                 font-size: 24px;
+                margin: 0 auto;
+            }
+            @page {
+                size: 5.5cm auto;
+                margin: 0;
             }
         }
     </style>
