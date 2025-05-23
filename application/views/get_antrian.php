@@ -29,6 +29,7 @@
     <script src="<?= base_url('assets/'); ?>js/sb-admin-2.min.js"></script>
     <script src="<?= base_url('assets/'); ?>vendor/sweetalert2/sweetalert2.all.min.js"></script>
 
+    <script src="https://qz.io/deploy/qz-tray.js"></script>
     <style>
         .btn-custom {
             width: 100%;
@@ -203,71 +204,63 @@
         }
 
         function ambilAntrian(id_layanan, kode, jenis) {
-            getLastAntrian(kode, function(lastNumber) {
-                const nextNumber = parseInt(lastNumber) + 1;
-                const nomor = formatNomorAntrian(nextNumber);
-                document.getElementById('nomorAntrian').innerText = `${kode}${nomor}`;
-                document.getElementById('jenisLayanan').innerText = jenis;
-                // Hapus QR code sebelumnya
-                document.getElementById('qrcode').innerHTML = '';
-                // Buat elemen canvas baru
-                var canvas = document.createElement('canvas');
-                document.getElementById('qrcode').appendChild(canvas);
-                // Generate QR code pada canvas tersebut
-                new QRious({
-                    element: canvas,
-                    value: `${kode}${nomor}`,
-                    size: 100
-                });
-                simpanAntrian(id_layanan, kode, jenis, nomor);
-            });
+    getLastAntrian(kode, function(lastNumber) {
+        const nextNumber = parseInt(lastNumber) + 1;
+        const nomor = formatNomorAntrian(nextNumber);
+        document.getElementById('nomorAntrian').innerText = `${kode}${nomor}`;
+        document.getElementById('jenisLayanan').innerText = jenis;
+
+        // Hapus QR code sebelumnya
+        document.getElementById('qrcode').innerHTML = '';
+
+        // Buat elemen canvas baru untuk QR code
+        var canvas = document.createElement('canvas');
+        document.getElementById('qrcode').appendChild(canvas);
+
+        // Generate QR code pada canvas tersebut
+        new QRious({
+            element: canvas,
+            value: `${kode}${nomor}`,
+            size: 100
+        });
+
+        // Simpan antrian ke server
+        simpanAntrian(id_layanan, kode, jenis, nomor, function(success) {
+            if (success) {
+                // Setelah data tersimpan, tampilkan dialog cetak otomatis
+                // Fokuskan area cetak jika perlu (opsional)
+                window.print();
+            } else {
+                Swal.fire('Error', 'Gagal menyimpan nomor antrian.', 'error');
+            }
+        });
+    });
+}
+
+
+function simpanAntrian(id_layanan, kode, jenis, nomor, callback) {
+    $.ajax({
+        url: '<?= base_url('GetAntrian/simpan_antrian'); ?>',
+        type: 'POST',
+        data: {
+            id_layanan: id_layanan,
+            kode: kode,
+            jenis: jenis,
+            nomor: nomor
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        },
+        error: function() {
+            callback(false);
         }
+    });
+}
 
-        function simpanAntrian(id_layanan, kode, jenis, nomor) {
-            $.ajax({
-                url: '<?= base_url('GetAntrian/simpan_antrian'); ?>',
-                type: 'POST',
-                data: {
-                    id_layanan: id_layanan,
-                    kode: kode,
-                    jenis: jenis,
-                    nomor: nomor
-                },
-                success: function(response) {
-                    console.log('Response dari server:', response);
-                    if (response.status === 'success') {
-                        // Show printable area
-                        document.getElementById('printableArea').style.display = 'block';
-                        // Wait a moment to ensure DOM is updated, then print
-                        setTimeout(function() {
-                            window.print();
-                            // Hide printable area after printing
-                            setTimeout(function() {
-                                document.getElementById('printableArea').style.display = 'none';
-                            }, 500);
-                        }, 100);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: 'Gagal menyimpan antrian: ' + response.message
-                        });
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan saat mengirim data ke server.'
-                    });
-                }
-            });
-        }
-
-    </script>
-
-    <script>
         // Add this function to handle logout
         function logout() {
             Swal.fire({
