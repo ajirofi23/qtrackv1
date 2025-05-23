@@ -6411,7 +6411,7 @@ a.close.disabled {
 }
 
 .bg-primary {
-  background-color: #4e73df !important;
+  background-color: #2E7D32 !important;
 }
 
 a.bg-primary:hover, a.bg-primary:focus,
@@ -6427,6 +6427,7 @@ button.bg-primary:focus {
 a.bg-secondary:hover, a.bg-secondary:focus,
 button.bg-secondary:hover,
 button.bg-secondary:focus {
+  
   background-color: #6b6d7d !important;
 }
 
